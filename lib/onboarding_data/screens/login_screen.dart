@@ -1,3 +1,4 @@
+import 'package:ehanapbuhay/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:ehanapbuhay/constants/app_constants.dart';
@@ -13,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -21,11 +23,25 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      // Handle login logic
-      print('Login pressed');
-      print('Email: ${_emailController.text}');
+      bool _isLoading = false;
+      setState(() => _isLoading = true);
+
+      final result = await AuthService().login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      setState(() => _isLoading = false);
+
+      if (result.success) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result.error ?? 'Login failed')));
+      }
     }
   }
 
@@ -79,9 +95,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        
+
           SizedBox(height: isMobile ? 16 : 20),
-          
+
           // Scrollable Content
           Expanded(
             child: MaxWidthBox(
@@ -90,14 +106,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: isMobile ? 450 : 600,
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: isMobile ? 24 : 32),
-                          
+
                           // Title
                           Text(
                             'Login to your Account',
@@ -107,9 +125,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.black,
                             ),
                           ),
-                          
+
                           SizedBox(height: isMobile ? 32 : 40),
-                          
+
                           // Email Field
                           Text(
                             'Email',
@@ -150,9 +168,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               return null;
                             },
                           ),
-                          
+
                           SizedBox(height: isMobile ? 20 : 24),
-                          
+
                           // Password Field
                           Text(
                             'Password',
@@ -165,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _passwordController,
-                            obscureText: true,
+                            obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               hintText: 'Enter your password...',
                               hintStyle: TextStyle(
@@ -182,17 +200,28 @@ class _LoginScreenState extends State<LoginScreen> {
                                 horizontal: 16,
                                 vertical: isMobile ? 16 : 20,
                               ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.grey[400],
+                                  size: 20,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
+                              ),
                             ),
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
+                              if (value == null || value.isEmpty)
                                 return 'Please enter your password';
-                              }
                               return null;
                             },
                           ),
-                          
+
                           SizedBox(height: isMobile ? 32 : 40),
-                          
+
                           // Login Button
                           SizedBox(
                             width: double.infinity,
@@ -216,32 +245,40 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          
+
                           SizedBox(height: isMobile ? 16 : 20),
-                          
+
                           // Forgot Password
-                          Center(
+                          Align(
+                            alignment: Alignment.centerRight,
                             child: TextButton(
                               onPressed: _handleForgotPassword,
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
                               child: Text(
                                 'Forgot your Password?',
                                 style: TextStyle(
-                                  color: const Color(0xFFFFEE00),
+                                  color: const Color(0xFFDED300),
                                   fontSize: labelSize - 2,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                           ),
-                          
+
                           SizedBox(height: isMobile ? 24 : 32),
-                          
+
                           // Divider with text
                           Row(
                             children: [
                               Expanded(child: Divider(color: Colors.grey[300])),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Text(
                                   'Or sign in with',
                                   style: TextStyle(
@@ -253,9 +290,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(child: Divider(color: Colors.grey[300])),
                             ],
                           ),
-                          
+
                           SizedBox(height: isMobile ? 24 : 32),
-                          
+
                           // Google Login Button
                           Center(
                             child: InkWell(
@@ -286,9 +323,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          
+
                           SizedBox(height: isMobile ? 32 : 40),
-                          
+
                           // Register link
                           Center(
                             child: Row(
@@ -306,12 +343,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.zero,
                                     minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                   child: Text(
                                     'Register here',
                                     style: TextStyle(
-                                      color: const Color(0xFFFFEE00),
+                                      color: const Color(0xFFDED300),
                                       fontSize: labelSize - 2,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -320,7 +358,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                           ),
-                          
+
                           SizedBox(height: isMobile ? 40 : 50),
                         ],
                       ),

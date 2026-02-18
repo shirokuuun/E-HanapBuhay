@@ -15,6 +15,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -72,17 +74,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                         ),
-                        const SizedBox(width: 40), // Balance the back button width
+                        const SizedBox(
+                          width: 40,
+                        ), // Balance the back button width
                       ],
                     ),
                   ),
-                  
-
                 ],
               ),
             ),
           ),
-          
+
           // Scrollable Content
           Expanded(
             child: MaxWidthBox(
@@ -91,14 +93,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 width: isMobile ? 450 : 600,
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: isMobile ? 24 : 32),
-                          
+
                           // Title
                           Text(
                             'Create your Account',
@@ -108,9 +112,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               color: Colors.black,
                             ),
                           ),
-                          
+
                           SizedBox(height: isMobile ? 32 : 40),
-                          
+
                           // Full Name Field
                           Text(
                             'Full Name',
@@ -147,9 +151,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               return null;
                             },
                           ),
-                          
+
                           SizedBox(height: isMobile ? 20 : 24),
-                          
+
                           // Email Field
                           Text(
                             'Email',
@@ -190,9 +194,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               return null;
                             },
                           ),
-                          
+
                           SizedBox(height: isMobile ? 20 : 24),
-                          
+
                           // Password Field
                           Text(
                             'Password',
@@ -205,7 +209,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _passwordController,
-                            obscureText: true,
+                            obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               hintText: 'Enter your password...',
                               hintStyle: TextStyle(
@@ -221,6 +225,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: isMobile ? 16 : 20,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.grey[400],
+                                  size: 20,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
                               ),
                             ),
                             validator: (value) {
@@ -233,9 +249,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               return null;
                             },
                           ),
-                          
+
                           SizedBox(height: isMobile ? 20 : 24),
-                          
+
                           // Confirm Password Field
                           Text(
                             'Confirm Password',
@@ -248,7 +264,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _confirmPasswordController,
-                            obscureText: true,
+                            obscureText: _obscureConfirmPassword,
                             decoration: InputDecoration(
                               hintText: 'Enter your password...',
                               hintStyle: TextStyle(
@@ -265,6 +281,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 horizontal: 16,
                                 vertical: isMobile ? 16 : 20,
                               ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureConfirmPassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.grey[400],
+                                  size: 20,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                                ),
+                              ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -276,9 +304,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               return null;
                             },
                           ),
-                          
+
                           SizedBox(height: isMobile ? 32 : 40),
-                          
+
                           // Sign Up Button
                           SizedBox(
                             width: double.infinity,
@@ -302,15 +330,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             ),
                           ),
-                          
+
                           SizedBox(height: isMobile ? 24 : 32),
-                          
+
                           // Divider with text
                           Row(
                             children: [
                               Expanded(child: Divider(color: Colors.grey[300])),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Text(
                                   'Or sign up with',
                                   style: TextStyle(
@@ -322,9 +352,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               Expanded(child: Divider(color: Colors.grey[300])),
                             ],
                           ),
-                          
+
                           SizedBox(height: isMobile ? 24 : 32),
-                          
+
                           // Google Sign Up Button
                           Center(
                             child: InkWell(
@@ -355,7 +385,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             ),
                           ),
-                          
+
                           SizedBox(height: isMobile ? 40 : 50),
                         ],
                       ),
