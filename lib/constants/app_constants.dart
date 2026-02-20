@@ -2,7 +2,8 @@ import 'package:ehanapbuhay/onboarding_data/models/onboarding_data.dart';
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color primaryYellow = Color(0xFFFBBF24);
+  static const Color primaryYellow = Color(0xFFFFEE00);
+  static const Color darkerYellow = Color(0xFFDED300);
   static const Color lightYellow = Color(0xFFFEF9C3);
   static const Color darkBlue = Color(0xFF1E3A8A);
   static const Color pageIndicatorInactive = Color(0xFFE5E7EB);

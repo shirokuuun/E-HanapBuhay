@@ -1,3 +1,4 @@
+import 'package:ehanapbuhay/onboarding_data/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:ehanapbuhay/onboarding_data/screens/onboarding_screen.dart';
@@ -25,15 +26,13 @@ class MyApp extends StatelessWidget {
           const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
         ],
       ),
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'SF Pro',
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'SF Pro'),
       initialRoute: '/',
       routes: {
         '/': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
+        '/home': (context) => const HomeScreen(),
       },
     );
   }
