@@ -3,6 +3,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'package:ehanapbuhay/onboarding_data/screens/job_details_screen.dart';
 import 'package:ehanapbuhay/onboarding_data/screens/applied_jobs_screen.dart';
 import 'package:ehanapbuhay/onboarding_data/screens/saved_jobs_screen.dart';
+import 'package:ehanapbuhay/onboarding_data/screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -26,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const AppliedJobsScreen(),
       const SavedJobsScreen(),
       const _PlaceholderPage(icon: Icons.notifications_none_rounded, label: 'Notifications'),
-      const _PlaceholderPage(icon: Icons.person_outline_rounded, label: 'Profile'),
+      const ProfileScreen(),
     ];
   }
 
