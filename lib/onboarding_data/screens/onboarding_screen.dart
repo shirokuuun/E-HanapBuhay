@@ -32,7 +32,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       } else {
         _currentPage = 0;
       }
-      
+
       _pageController.animateToPage(
         _currentPage,
         duration: AppConstants.pageTransitionDuration,
@@ -48,13 +48,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _handleSignUp() {
-    // Navigate to sign up screen
-    Navigator.pushNamed(context, '/signup');
-  }
-
-  void _handleSignIn() {
-    // Navigate to sign in screen
+  void _handleGetStarted() {
     Navigator.pushNamed(context, '/login');
   }
 
@@ -65,7 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final topSpacing = isMobile ? 30.0 : 40.0;
     final indicatorSpacing = isMobile ? 30.0 : 40.0;
     final bottomSpacing = isMobile ? 40.0 : 60.0;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: MaxWidthBox(
@@ -76,9 +70,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               // Header with logo
               const AppHeader(),
-              
+
               SizedBox(height: topSpacing),
-              
+
               // PageView with illustrations
               Expanded(
                 child: PageView.builder(
@@ -96,21 +90,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   },
                 ),
               ),
-              
+
               // Page indicator
               PageIndicator(
                 currentPage: _currentPage,
                 pageCount: AppConstants.onboardingPages.length,
               ),
-              
+
               SizedBox(height: indicatorSpacing),
-              
+
               // Buttons
-              OnboardingButtons(
-                onSignUp: _handleSignUp,
-                onSignIn: _handleSignIn,
-              ),
-              
+              OnboardingButtons(onGetStarted: _handleGetStarted),
+
               SizedBox(height: bottomSpacing),
             ],
           ),

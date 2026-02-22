@@ -65,7 +65,7 @@ class OnboardingPage extends StatelessWidget {
   }
 
   Widget _buildIllustration(bool isMobile) {
-    final imageSize = isMobile ? 200.0 : 280.0;
+    final imageSize = isMobile ? 350.0 : 280.0;
     
     return Image.asset(
       data.illustration,

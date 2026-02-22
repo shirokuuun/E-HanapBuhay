@@ -21,19 +21,19 @@ class AppConstants {
   static List<OnboardingData> onboardingPages = [
     OnboardingData(
       title: 'Land your Job',
-      description: 'Connect, Apply, and Get Hired\nwith your favorite job around Manila',
+      description: 'Connect, Apply, and Get Hired\nwith your favorite job around Mandaluyong',
       backgroundColor: AppColors.onboarding1Bg,
       illustration: 'assets/onboarding1.png',
     ),
     OnboardingData(
       title: 'Career Moves Made Easy',
-      description: 'Skip the endless searching. Get matched\nwith jobs in Manila that actually fit your skills',
+      description: 'Skip the endless searching. Get matched\nwith jobs in Mandaluyong that actually fit your skills',
       backgroundColor: AppColors.onboarding2Bg,
       illustration: 'assets/onboarding2.png',
     ),
     OnboardingData(
       title: 'Find Work You\'ll Love',
-      description: 'We bridge the gap between Manila\'s\nbrightest talent and its most exciting workplaces',
+      description: 'We bridge the gap between Mandaluyong\'s\nbrightest talent and its most exciting workplaces',
       backgroundColor: AppColors.onboarding3Bg,
       illustration: 'assets/onboarding3.png',
     ),
