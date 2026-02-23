@@ -2,6 +2,7 @@ import 'package:ehanapbuhay/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:ehanapbuhay/constants/app_constants.dart';
+import 'package:ehanapbuhay/services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -25,12 +26,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      bool _isLoading = false;
+      bool _isLoading;
       setState(() => _isLoading = true);
 
-      final result = await AuthService().login(
-        _emailController.text,
-        _passwordController.text,
+      final result = await ApiService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
 
       setState(() => _isLoading = false);

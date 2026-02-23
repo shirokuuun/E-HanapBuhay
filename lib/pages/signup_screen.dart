@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:ehanapbuhay/constants/app_constants.dart';
+import 'package:ehanapbuhay/services/api_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -27,12 +28,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _handleSignUp() {
+  void _handleSignUp() async {
     if (_formKey.currentState!.validate()) {
-      // Handle sign up logic
-      print('Sign Up pressed');
-      print('Name: ${_fullNameController.text}');
-      print('Email: ${_emailController.text}');
+      final result = await ApiService.register(
+        fullName: _fullNameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (result.success) {
+        // Token is auto-saved by ApiService
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.error ?? 'Registration failed')),
+        );
+      }
     }
   }
 
