@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -18,19 +19,14 @@ class ApiResponse<T> {
   final String? message;
   final String? error;
 
-  ApiResponse({
-    required this.success,
-    this.data,
-    this.message,
-    this.error,
-  });
+  ApiResponse({required this.success, this.data, this.message, this.error});
 }
 
 class ApiService {
   // ── Change this to your local IP when running on a real device ──────────
   static const String baseUrl = 'http://10.0.2.2:3000/api'; // Android emulator
   // static const String baseUrl = 'http://localhost:3000/api'; // iOS simulator
-  // static const String baseUrl = 'http://YOUR_LOCAL_IP:3000/api'; // Real device
+  // static const String baseUrl = 'http://192.168.1.191:3000/api'; // Real device
 
   static const String _tokenKey = 'auth_token';
 
@@ -75,7 +71,10 @@ class ApiService {
           message: body['message'],
         );
       }
-      return ApiResponse(success: false, error: body['message'] ?? 'Request failed');
+      return ApiResponse(
+        success: false,
+        error: body['message'] ?? 'Request failed',
+      );
     } catch (e) {
       return ApiResponse(success: false, error: 'Failed to parse response');
     }
@@ -104,7 +103,10 @@ class ApiService {
         if (phone != null) 'phone': phone,
       }),
     );
-    final result = _handle<Map<String, dynamic>>(response, (j) => Map<String, dynamic>.from(j));
+    final result = _handle<Map<String, dynamic>>(
+      response,
+      (j) => Map<String, dynamic>.from(j),
+    );
     if (result.success && result.data?['token'] != null) {
       await saveToken(result.data!['token']);
     }
@@ -121,7 +123,10 @@ class ApiService {
       headers: await _headers(),
       body: jsonEncode({'email': email, 'password': password}),
     );
-    final result = _handle<Map<String, dynamic>>(response, (j) => Map<String, dynamic>.from(j));
+    final result = _handle<Map<String, dynamic>>(
+      response,
+      (j) => Map<String, dynamic>.from(j),
+    );
     if (result.success && result.data?['token'] != null) {
       await saveToken(result.data!['token']);
     }
@@ -179,7 +184,9 @@ class ApiService {
     final params = <String, String>{};
     if (status != null && status != 'All') params['status'] = status;
 
-    final uri = Uri.parse('$baseUrl/applications').replace(queryParameters: params);
+    final uri = Uri.parse(
+      '$baseUrl/applications',
+    ).replace(queryParameters: params);
     final response = await http.get(uri, headers: await _headers(auth: true));
     return _handle(response, (j) => List<Map<String, dynamic>>.from(j));
   }
@@ -230,7 +237,8 @@ class ApiService {
       'applicant_location': location,
       'job_title': jobTitle,
       if (companyName != null) 'company_name': companyName,
-      if (workFrom != null) 'work_from': workFrom.toIso8601String().split('T').first,
+      if (workFrom != null)
+        'work_from': workFrom.toIso8601String().split('T').first,
       if (workTo != null) 'work_to': workTo.toIso8601String().split('T').first,
       'currently_working': '$currentlyWorking',
       if (workCity != null) 'work_city': workCity,
@@ -239,16 +247,21 @@ class ApiService {
       if (eduCity != null) 'edu_city': eduCity,
       if (degree != null) 'degree': degree,
       if (major != null) 'major': major,
-      if (eduFrom != null) 'edu_from': eduFrom.toIso8601String().split('T').first,
+      if (eduFrom != null)
+        'edu_from': eduFrom.toIso8601String().split('T').first,
       if (eduTo != null) 'edu_to': eduTo.toIso8601String().split('T').first,
       'currently_studying': '$currentlyStudying',
     });
 
     if (resumeFile != null) {
-      request.files.add(await http.MultipartFile.fromPath('resume', resumeFile.path));
+      request.files.add(
+        await http.MultipartFile.fromPath('resume', resumeFile.path),
+      );
     }
     if (coverLetterFile != null) {
-      request.files.add(await http.MultipartFile.fromPath('cover_letter', coverLetterFile.path));
+      request.files.add(
+        await http.MultipartFile.fromPath('cover_letter', coverLetterFile.path),
+      );
     }
 
     final streamed = await request.send();
@@ -316,6 +329,71 @@ class ApiService {
         if (phone != null) 'phone': phone,
       }),
     );
+    return _handle(response, (j) => Map<String, dynamic>.from(j));
+  }
+
+  static Future<ApiResponse<Map<String, dynamic>>> uploadAvatar({
+    required File imageFile,
+  }) async {
+    final token = await getToken();
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/profile/avatar'),
+    );
+    if (token != null) request.headers['Authorization'] = 'Bearer $token';
+
+    final ext = imageFile.path.split('.').last.toLowerCase();
+    final mimeType = ext == 'png' ? 'png' : 'jpeg';
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'avatar',
+        imageFile.path,
+        contentType: MediaType('image', mimeType),
+      ),
+    );
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+    return _handle(response, (j) => Map<String, dynamic>.from(j));
+  }
+
+  static Future<ApiResponse<Map<String, dynamic>>> getDocuments() async {
+  final response = await http.get(
+    Uri.parse('$baseUrl/profile/documents'),
+    headers: await _headers(auth: true),
+  );
+  return _handle(response, (j) => Map<String, dynamic>.from(j));
+  }
+
+    static Future<ApiResponse<Map<String, dynamic>>> uploadDocument({
+    required String type, // 'resume' or 'cover'
+    required File file,
+  }) async {
+    final token = await getToken();
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/profile/documents'),
+    );
+    if (token != null) request.headers['Authorization'] = 'Bearer $token';
+
+    final ext = file.path.split('.').last.toLowerCase();
+    final mimeMap = {
+      'pdf': MediaType('application', 'pdf'),
+      'doc': MediaType('application', 'msword'),
+      'docx': MediaType('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document'),
+    };
+
+    request.fields['document_type'] = type;
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        type == 'resume' ? 'resume' : 'cover_letter',
+        file.path,
+        contentType: mimeMap[ext] ?? MediaType('application', 'octet-stream'),
+      ),
+    );
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
     return _handle(response, (j) => Map<String, dynamic>.from(j));
   }
 }
