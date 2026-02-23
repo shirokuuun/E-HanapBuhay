@@ -1,3 +1,4 @@
+import 'package:ehanapbuhay/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:ehanapbuhay/pages/job_details_screen.dart';
@@ -26,7 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
       const _JobListPage(),
       const AppliedJobsScreen(),
       const SavedJobsScreen(),
-      const _PlaceholderPage(icon: Icons.notifications_none_rounded, label: 'Notifications'),
+      const _PlaceholderPage(
+        icon: Icons.notifications_none_rounded,
+        label: 'Notifications',
+      ),
       const ProfileScreen(),
     ];
   }
@@ -36,10 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       // IndexedStack keeps all pages alive (preserves scroll/filter state)
-      body: IndexedStack(
-        index: _selectedNavIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _selectedNavIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFFFF9C4),
@@ -107,47 +108,30 @@ class _JobListPage extends StatefulWidget {
 }
 
 class _JobListPageState extends State<_JobListPage> {
-  String _selectedFilter = 'Remote only';
+  String _selectedFilter = 'All';
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> _mockJobs = [
-    {
-      'company': 'Volkswagen',
-      'logo': 'assets/volkswagen_logo.png',
-      'title': 'Jr. UI/UX Designer',
-      'salary': '₱7000-₱10000',
-      'description':
-          'Join top clients and find freelance jobs that match your skills! Browse, apply, and get hired for roles like UI/UX design, digital marketing, and more — all in one place!',
-      'isBookmarked': false,
-    },
-    {
-      'company': 'Ikea',
-      'logo': 'assets/ikea_logo.png',
-      'title': 'Sr. Web Developer',
-      'salary': '₱70000-₱100000',
-      'description':
-          'Join top clients and find freelance jobs that match your skills! Browse, apply, and get hired for roles like UI/UX design, digital marketing, and more — all in one place!',
-      'isBookmarked': false,
-    },
-    {
-      'company': 'Ikea',
-      'logo': 'assets/ikea_logo.png',
-      'title': 'Product Manager',
-      'salary': '₱50000-₱80000',
-      'description':
-          'Join top clients and find freelance jobs that match your skills! Browse, apply, and get hired for roles like UI/UX design, digital marketing, and more — all in one place!',
-      'isBookmarked': true,
-    },
-    {
-      'company': 'Volkswagen',
-      'logo': 'assets/volkswagen_logo.png',
-      'title': 'Sr. UI/UX Designer',
-      'salary': '₱40000-₱60000',
-      'description':
-          'Join top clients and find freelance jobs that match your skills! Browse, apply, and get hired for roles like UI/UX design, digital marketing, and more — all in one place!',
-      'isBookmarked': false,
-    },
-  ];
+  List<Map<String, dynamic>> _jobs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchJobs();
+  }
+
+  Future<void> _fetchJobs() async {
+    String? workSetup;
+    if (_selectedFilter == 'Remote only') workSetup = 'Remote';
+    if (_selectedFilter == 'Onsite only') workSetup = 'Onsite';
+    // 'All' → workSetup stays null → no filter applied
+
+    final result = await ApiService.getJobs(workSetup: workSetup);
+    if (result.success && mounted) {
+      setState(() {
+        _jobs = List<Map<String, dynamic>>.from(result.data!['jobs']);
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -299,7 +283,7 @@ class _JobListPageState extends State<_JobListPage> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    '${_mockJobs.length * 10 + 27} New jobs available',
+                    '${_jobs.length * 10 + 27} New jobs available',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -310,15 +294,17 @@ class _JobListPageState extends State<_JobListPage> {
               ),
               const SizedBox(height: 10),
               Row(
-                children: ['Remote only', 'Onsite only'].map((filter) {
+                children: ['All', 'Remote only', 'Onsite only'].map((filter) {
                   final isSelected = _selectedFilter == filter;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
-                      onTap: () =>
-                          setState(() => _selectedFilter = filter),
+                      onTap: () {
+                        setState(() => _selectedFilter = filter);
+                        _fetchJobs();
+                      },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(  
                           horizontal: 16,
                           vertical: 8,
                         ),
@@ -338,9 +324,7 @@ class _JobListPageState extends State<_JobListPage> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: isSelected
-                                ? Colors.black
-                                : Colors.grey[600],
+                            color: isSelected ? Colors.black : Colors.grey[600],
                           ),
                         ),
                       ),
@@ -359,22 +343,26 @@ class _JobListPageState extends State<_JobListPage> {
               horizontal: horizontalPadding,
               vertical: 4,
             ),
-            itemCount: _mockJobs.length,
+            itemCount: _jobs.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final job = _mockJobs[index];
+              final job = _jobs[index];
               return _JobCard(
                 job: job,
                 onBookmarkToggle: () {
                   setState(() {
-                    _mockJobs[index]['isBookmarked'] =
-                        !_mockJobs[index]['isBookmarked'];
+                    _jobs[index]['isBookmarked'] =
+                        !_jobs[index]['isBookmarked'];
                   });
                 },
                 onApply: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => JobDetailScreen(job: job, appliedDate: null, applicationStatus: null,),
+                      builder: (_) => JobDetailScreen(
+                        job: job,
+                        appliedDate: null,
+                        applicationStatus: null,
+                      ),
                     ),
                   );
                 },
@@ -452,6 +440,15 @@ class _JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final companyName =
+        (job['company'] ?? job['company_name'] ?? '?') as String;
+    final jobTitle = (job['title'] ?? '') as String;
+    final salary =
+        (job['salary_range'] ?? job['salary'] ?? 'Negotiable') as String;
+    final description = (job['description'] ?? '') as String;
+    final logoUrl = job['logo'] as String?;
+    final isBookmarked = (job['isBookmarked'] ?? false) as bool;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -479,25 +476,35 @@ class _JobCard extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    job['logo'],
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Center(
-                      child: Text(
-                        job['company'][0],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                  child: logoUrl != null && logoUrl.startsWith('http')
+                      ? Image.network(
+                          logoUrl,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Center(
+                            child: Text(
+                              companyName[0],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            companyName[0],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  job['company'],
+                  companyName,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -507,10 +514,10 @@ class _JobCard extends StatelessWidget {
               GestureDetector(
                 onTap: onBookmarkToggle,
                 child: Icon(
-                  job['isBookmarked']
+                  isBookmarked
                       ? Icons.bookmark_rounded
                       : Icons.bookmark_border_rounded,
-                  color: job['isBookmarked']
+                  color: isBookmarked
                       ? const Color(0xFFFFEE00)
                       : Colors.grey[400],
                   size: 22,
@@ -520,7 +527,7 @@ class _JobCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            job['description'],
+            description,
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey[600],
@@ -537,7 +544,7 @@ class _JobCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      job['title'],
+                      jobTitle,
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -546,9 +553,8 @@ class _JobCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Salary: ${job['salary']}',
-                      style:
-                          TextStyle(fontSize: 11, color: Colors.grey[400]),
+                      'Salary: $salary',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                     ),
                   ],
                 ),
