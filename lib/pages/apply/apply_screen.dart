@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:ehanapbuhay/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -11,6 +13,7 @@ class ApplyScreen extends StatefulWidget {
 }
 
 class _ApplyScreenState extends State<ApplyScreen> {
+  bool _isSubmitting = false;
   int _currentStep = 0;
   final int _totalSteps = 4;
 
@@ -122,8 +125,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
 
   bool _validateStep2() {
     setState(() {
-      _resumeError =
-          _resumeFile == null ? 'Please upload your resume' : null;
+      _resumeError = _resumeFile == null ? 'Please upload your resume' : null;
       // Cover letter is optional — no validation required
       _coverLetterError = null;
     });
@@ -182,7 +184,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
         _eduToError == null;
   }
 
-  void _next() {
+  void _next() async {
     final validators = [
       _validateStep1,
       _validateStep2,
@@ -195,26 +197,70 @@ class _ApplyScreenState extends State<ApplyScreen> {
     if (_currentStep < _totalSteps - 1) {
       setState(() => _currentStep++);
     } else {
-      Navigator.of(context).pop();
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Successfully applied to ${widget.job['title']} at ${widget.job['company']}!',
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          backgroundColor: const Color(0xFFFFEE00),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 3),
-        ),
+      // Show loading indicator
+      setState(() => _isSubmitting = true);
+
+      final result = await ApiService.submitApplication(
+        jobId: widget.job['id'],
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        phone: _phoneController.text,
+        email: _emailController.text,
+        location: _locationController.text,
+        resumeFile: _resumeFile?.path != null ? File(_resumeFile!.path!) : null,
+        coverLetterFile: _coverLetterFile?.path != null
+            ? File(_coverLetterFile!.path!)
+            : null,
+        jobTitle: _jobTitleController.text,
+        companyName: _companyController.text,
+        workFrom: _workFrom,
+        workTo: _workTo,
+        currentlyWorking: _currentlyWorkHere,
+        schoolName: _educationController.text,
+        degree: _degreeController.text,
+        major: _majorController.text,
+        eduFrom: _eduFrom,
+        eduTo: _eduTo,
+        currentlyStudying: _currentlyAttend,
       );
+
+      setState(() => _isSubmitting = false);
+
+      if (result.success) {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Successfully applied to ${widget.job['title']} at ${widget.job['company']}!',
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            backgroundColor: const Color(0xFFFFEE00),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.error ?? 'Failed to submit application'),
+            backgroundColor: Colors.red[400],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
     }
   }
 
@@ -263,7 +309,8 @@ class _ApplyScreenState extends State<ApplyScreen> {
                 backgroundColor: Colors.red[400],
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 margin: const EdgeInsets.all(16),
               ),
             );
@@ -296,7 +343,8 @@ class _ApplyScreenState extends State<ApplyScreen> {
             backgroundColor: Colors.red[400],
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(12),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -352,8 +400,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
           children: [
             // ── Header ─────────────────────────────────────────────────────
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(
                 children: [
                   GestureDetector(
@@ -373,13 +420,17 @@ class _ApplyScreenState extends State<ApplyScreen> {
                       'Apply to ${widget.job['company'] ?? 'Company'}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   // Step counter badge
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFEE00),
                       borderRadius: BorderRadius.circular(20),
@@ -406,7 +457,8 @@ class _ApplyScreenState extends State<ApplyScreen> {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       margin: EdgeInsets.only(
-                          right: i < _totalSteps - 1 ? 6 : 0),
+                        right: i < _totalSteps - 1 ? 6 : 0,
+                      ),
                       height: 4,
                       decoration: BoxDecoration(
                         color: i <= _currentStep
@@ -426,7 +478,9 @@ class _ApplyScreenState extends State<ApplyScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 16),
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: _buildCurrentStep(),
               ),
             ),
@@ -461,22 +515,37 @@ class _ApplyScreenState extends State<ApplyScreen> {
                     const Spacer(),
                   ],
                   GestureDetector(
-                    onTap: _next,
+                    onTap: _isSubmitting
+                        ? null
+                        : _next, // disable while loading
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 36, vertical: 14),
+                        horizontal: 36,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFEE00),
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      child: Text(
-                        _currentStep == _totalSteps - 1 ? 'Submit' : 'Next',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
+                            )
+                          : Text(
+                              _currentStep == _totalSteps - 1
+                                  ? 'Submit'
+                                  : 'Next',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -509,8 +578,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Contact info',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Contact info',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
 
         // Profile preview card
@@ -527,20 +598,23 @@ class _ApplyScreenState extends State<ApplyScreen> {
                 width: 44,
                 height: 44,
                 decoration: const BoxDecoration(
-                    color: Color(0xFFE0E0E0), shape: BoxShape.circle),
-                child:
-                    const Icon(Icons.person, color: Colors.white, size: 24),
+                  color: Color(0xFFE0E0E0),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.person, color: Colors.white, size: 24),
               ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Your Profile',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 14)),
-                  Text('Fill in your details below',
-                      style:
-                          TextStyle(color: Colors.grey[500], fontSize: 12)),
+                  const Text(
+                    'Your Profile',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                  Text(
+                    'Fill in your details below',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  ),
                 ],
               ),
             ],
@@ -555,8 +629,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
           'Enter first name',
           errorText: _firstNameError,
           onChanged: (_) {
-            if (_firstNameError != null)
-              setState(() => _firstNameError = null);
+            if (_firstNameError != null) setState(() => _firstNameError = null);
           },
         ),
         const SizedBox(height: 14),
@@ -602,8 +675,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
           'e.g. Mandaluyong City',
           errorText: _locationError,
           onChanged: (_) {
-            if (_locationError != null)
-              setState(() => _locationError = null);
+            if (_locationError != null) setState(() => _locationError = null);
           },
         ),
       ],
@@ -616,10 +688,14 @@ class _ApplyScreenState extends State<ApplyScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Resume',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text('Be sure to include an updated resume',
-            style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+        const Text(
+          'Resume',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          'Be sure to include an updated resume',
+          style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+        ),
         const SizedBox(height: 20),
 
         _buildUploadButton(
@@ -633,15 +709,19 @@ class _ApplyScreenState extends State<ApplyScreen> {
           }),
         ),
         const SizedBox(height: 6),
-        Text('DOC, DOCX, PDF',
-            style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+        Text(
+          'DOC, DOCX, PDF',
+          style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+        ),
 
         const SizedBox(height: 28),
 
         Row(
           children: [
-            const Text('Cover Letter',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Cover Letter',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -660,8 +740,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
             ),
           ],
         ),
-        Text('Be sure to include an updated cover letter',
-            style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+        Text(
+          'Be sure to include an updated cover letter',
+          style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+        ),
         const SizedBox(height: 16),
 
         _buildUploadButton(
@@ -675,8 +757,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
           }),
         ),
         const SizedBox(height: 6),
-        Text('DOC, DOCX, PDF',
-            style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+        Text(
+          'DOC, DOCX, PDF',
+          style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+        ),
       ],
     );
   }
@@ -687,8 +771,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Work Experience',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Work Experience',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 20),
 
         _buildLabel('Your title', required: true),
@@ -697,8 +783,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
           'e.g. UI/UX Designer',
           errorText: _jobTitleError,
           onChanged: (_) {
-            if (_jobTitleError != null)
-              setState(() => _jobTitleError = null);
+            if (_jobTitleError != null) setState(() => _jobTitleError = null);
           },
         ),
         const SizedBox(height: 14),
@@ -707,19 +792,22 @@ class _ApplyScreenState extends State<ApplyScreen> {
         _buildTextField(_companyController, 'e.g. Volkswagen'),
         const SizedBox(height: 14),
 
-        const Text('Dates of Employment',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        const Text(
+          'Dates of Employment',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
 
         GestureDetector(
-          onTap: () =>
-              setState(() => _currentlyWorkHere = !_currentlyWorkHere),
+          onTap: () => setState(() => _currentlyWorkHere = !_currentlyWorkHere),
           child: Row(
             children: [
               _buildCheckbox(_currentlyWorkHere),
               const SizedBox(width: 8),
-              const Text('I currently work here',
-                  style: TextStyle(fontSize: 13)),
+              const Text(
+                'I currently work here',
+                style: TextStyle(fontSize: 13),
+              ),
             ],
           ),
         ),
@@ -777,8 +865,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Education',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Education',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 20),
 
         _buildLabel('School / University', required: true),
@@ -787,8 +877,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
           'e.g. University of the Philippines',
           errorText: _educationError,
           onChanged: (_) {
-            if (_educationError != null)
-              setState(() => _educationError = null);
+            if (_educationError != null) setState(() => _educationError = null);
           },
         ),
         const SizedBox(height: 14),
@@ -805,19 +894,22 @@ class _ApplyScreenState extends State<ApplyScreen> {
         _buildTextField(_majorController, 'e.g. Computer Science'),
         const SizedBox(height: 16),
 
-        const Text('Dates of Attendance',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        const Text(
+          'Dates of Attendance',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
 
         GestureDetector(
-          onTap: () =>
-              setState(() => _currentlyAttend = !_currentlyAttend),
+          onTap: () => setState(() => _currentlyAttend = !_currentlyAttend),
           child: Row(
             children: [
               _buildCheckbox(_currentlyAttend),
               const SizedBox(width: 8),
-              const Text('I currently attend this institution',
-                  style: TextStyle(fontSize: 13)),
+              const Text(
+                'I currently attend this institution',
+                style: TextStyle(fontSize: 13),
+              ),
             ],
           ),
         ),
@@ -867,9 +959,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
       child: RichText(
         text: TextSpan(
           style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
           children: [
             TextSpan(text: text),
             if (required)
@@ -913,11 +1006,12 @@ class _ApplyScreenState extends State<ApplyScreen> {
             style: const TextStyle(fontSize: 14),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle:
-                  TextStyle(color: Colors.grey[400], fontSize: 13),
+              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 12),
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
         ),
@@ -930,9 +1024,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
               Text(
                 errorText,
                 style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500),
+                  color: Colors.red,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -955,8 +1050,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 13),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             decoration: BoxDecoration(
               color: hasError ? const Color(0xFFFFF0F0) : Colors.grey[100],
               borderRadius: BorderRadius.circular(10),
@@ -972,9 +1066,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
                     value != null ? _formatDate(value) : hint,
                     style: TextStyle(
                       fontSize: 14,
-                      color: value != null
-                          ? Colors.black87
-                          : Colors.grey[400],
+                      color: value != null ? Colors.black87 : Colors.grey[400],
                     ),
                   ),
                 ),
@@ -996,9 +1088,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
               Text(
                 errorText,
                 style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500),
+                  color: Colors.red,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -1023,8 +1116,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
         // Attached file card — shown when file is selected
         if (hasFile)
           Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
               color: const Color(0xFFFFFDE7),
@@ -1041,8 +1133,11 @@ class _ApplyScreenState extends State<ApplyScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey[200]!),
                   ),
-                  child: const Icon(Icons.description_outlined,
-                      size: 18, color: Color(0xFF2D2D2D)),
+                  child: const Icon(
+                    Icons.description_outlined,
+                    size: 18,
+                    color: Color(0xFF2D2D2D),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -1063,7 +1158,9 @@ class _ApplyScreenState extends State<ApplyScreen> {
                         Text(
                           _formatFileSize(file.size),
                           style: TextStyle(
-                              fontSize: 11, color: Colors.grey[500]),
+                            fontSize: 11,
+                            color: Colors.grey[500],
+                          ),
                         ),
                     ],
                   ),
@@ -1079,8 +1176,11 @@ class _ApplyScreenState extends State<ApplyScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.grey[300]!),
                     ),
-                    child: const Icon(Icons.close,
-                        size: 14, color: Colors.black54),
+                    child: const Icon(
+                      Icons.close,
+                      size: 14,
+                      color: Colors.black54,
+                    ),
                   ),
                 ),
               ],
@@ -1098,9 +1198,7 @@ class _ApplyScreenState extends State<ApplyScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: hasError
-                    ? Colors.red.shade300
-                    : const Color(0xFFFFEE00),
+                color: hasError ? Colors.red.shade300 : const Color(0xFFFFEE00),
                 width: 1.5,
               ),
             ),
@@ -1135,9 +1233,10 @@ class _ApplyScreenState extends State<ApplyScreen> {
               Text(
                 errorText,
                 style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500),
+                  color: Colors.red,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),

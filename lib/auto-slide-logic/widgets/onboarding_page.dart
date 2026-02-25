@@ -1,4 +1,4 @@
-import 'package:ehanapbuhay/onboarding_data/models/onboarding_data.dart';
+import 'package:ehanapbuhay/pages/onboarding/onboarding_data.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:flutter/material.dart';
 

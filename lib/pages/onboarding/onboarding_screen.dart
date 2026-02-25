@@ -3,7 +3,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'dart:async';
 import 'package:ehanapbuhay/constants/app_constants.dart';
 import 'package:ehanapbuhay/auto-slide-logic/widgets/app_header.dart';
-import 'package:ehanapbuhay/widget/page_indicator.dart';
+import 'package:ehanapbuhay/widgets/page_indicator.dart';
 import 'package:ehanapbuhay/auto-slide-logic/widgets/onboarding_buttons.dart';
 import 'package:ehanapbuhay/auto-slide-logic/widgets/onboarding_page.dart';
 

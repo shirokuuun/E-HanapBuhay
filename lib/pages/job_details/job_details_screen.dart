@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:ehanapbuhay/pages/apply_screen.dart';
+import 'package:ehanapbuhay/pages/apply/apply_screen.dart';
 
 class JobDetailScreen extends StatefulWidget {
   final Map<String, dynamic> job;

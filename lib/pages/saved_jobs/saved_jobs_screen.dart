@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:ehanapbuhay/pages/job_details_screen.dart';
+import 'package:ehanapbuhay/widgets/app_logo_header.dart';
+import 'package:ehanapbuhay/widgets/app_toast.dart';
+import 'package:ehanapbuhay/pages/job_details/job_details_screen.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SAVED JOBS SCREEN
-// TODO (backend integration): Replace _savedJobs with an API call:
-//   final response = await dio.get('/api/saved-jobs');
-//   final saved = (response.data as List)
-//       .map((e) => SavedJob.fromJson(e))
-//       .toList();
-// ─────────────────────────────────────────────────────────────────────────────
 class SavedJobsScreen extends StatefulWidget {
-  const SavedJobsScreen({Key? key}) : super(key: key);
+  const SavedJobsScreen({super.key});
 
   @override
   State<SavedJobsScreen> createState() => _SavedJobsScreenState();
 }
 
 class _SavedJobsScreenState extends State<SavedJobsScreen> {
-  // Mock data — will be fetched from DELETE /api/saved-jobs/:id and
-  // GET /api/saved-jobs when backend is integrated
+  // TODO (backend): replace with GET /api/saved-jobs
   final List<Map<String, dynamic>> _savedJobs = [
     {
       'company': 'Volkswagen',
@@ -27,7 +20,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
       'salary': '₱7000-₱10000',
       'type': 'Remote',
       'description':
-          'Join top clients and find freelance jobs that match your skills! Browse, apply, and get hired for roles like UI/UX design, digital marketing, and more — all in one place!',
+          'Join top clients and find freelance jobs that match your skills!',
       'savedDate': 'Feb 18, 2026',
     },
     {
@@ -37,7 +30,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
       'salary': '₱50000-₱80000',
       'type': 'Onsite',
       'description':
-          'Join top clients and find freelance jobs that match your skills! Browse, apply, and get hired for roles like UI/UX design, digital marketing, and more — all in one place!',
+          'Join top clients and find freelance jobs that match your skills!',
       'savedDate': 'Feb 15, 2026',
     },
     {
@@ -47,7 +40,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
       'salary': '₱100000-₱150000',
       'type': 'Remote',
       'description':
-          'Join top clients and find freelance jobs that match your skills! Browse, apply, and get hired for roles like UI/UX design, digital marketing, and more — all in one place!',
+          'Join top clients and find freelance jobs that match your skills!',
       'savedDate': 'Feb 12, 2026',
     },
     {
@@ -57,7 +50,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
       'salary': '₱120000-₱180000',
       'type': 'Hybrid',
       'description':
-          'Join top clients and find freelance jobs that match your skills! Browse, apply, and get hired for roles like UI/UX design, digital marketing, and more — all in one place!',
+          'Join top clients and find freelance jobs that match your skills!',
       'savedDate': 'Feb 9, 2026',
     },
   ];
@@ -77,7 +70,8 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
         ),
         backgroundColor: const Color(0xFFFFEE00),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
         action: SnackBarAction(
           label: 'Undo',
@@ -92,128 +86,79 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header ──────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Image.asset(
-                      'assets/ehanapbuhay.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Container(
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFEE00),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.work, size: 22),
-                      ),
-                    ),
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header ────────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: const AppLogoHeader(),
+          ),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Saved Jobs',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
-                  const SizedBox(width: 8),
-                  RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'e-',
-                          style: TextStyle(
-                            color: Color(0xFFF8E806),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'HanapBuhay',
-                          style: TextStyle(
-                            color: Color(0xFF0274E5),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Saved Jobs',
-                    style: TextStyle(
-                      fontSize: 22,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEE00),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_savedJobs.length} saved',
+                    style: const TextStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFEE00),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${_savedJobs.length} saved',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // ── List ──────────────────────────────────────────────────────────
+          Expanded(
+            child: _savedJobs.isEmpty
+                ? _buildEmptyState()
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                    itemCount: _savedJobs.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final job = _savedJobs[index];
+                      return SavedJobCard(
+                        job: job,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => JobDetailScreen(
+                              job: job,
+                              appliedDate: null,
+                              applicationStatus: null,
+                            ),
+                          ),
+                        ),
+                        onUnsave: () => _unsaveJob(index),
+                      );
+                    },
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── Job list ─────────────────────────────────────────────────────
-            Expanded(
-              child: _savedJobs.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                      itemCount: _savedJobs.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final job = _savedJobs[index];
-                        return _SavedJobCard(
-                          job: job,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => JobDetailScreen(
-                                  job: job,
-                                  appliedDate: null,
-                                  applicationStatus: null,
-                                ),
-                              ),
-                            );
-                          },
-                          onUnsave: () => _unsaveJob(index),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -259,12 +204,13 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 // ─────────────────────────────────────────────────────────────────────────────
 // SAVED JOB CARD
 // ─────────────────────────────────────────────────────────────────────────────
-class _SavedJobCard extends StatelessWidget {
+class SavedJobCard extends StatelessWidget {
   final Map<String, dynamic> job;
   final VoidCallback onTap;
   final VoidCallback onUnsave;
 
-  const _SavedJobCard({
+  const SavedJobCard({
+    super.key,
     required this.job,
     required this.onTap,
     required this.onUnsave,
@@ -290,7 +236,7 @@ class _SavedJobCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Company logo
+            // Logo
             Container(
               width: 48,
               height: 48,
@@ -317,7 +263,7 @@ class _SavedJobCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
 
-            // Job info
+            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,7 +284,6 @@ class _SavedJobCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      // Job type badge
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -349,7 +294,6 @@ class _SavedJobCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: const Color(0xFFFFEE00),
-                            width: 1,
                           ),
                         ),
                         child: Text(
@@ -376,14 +320,14 @@ class _SavedJobCard extends StatelessWidget {
               ),
             ),
 
-            // Bookmark / unsave button
+            // Bookmark
             GestureDetector(
               onTap: onUnsave,
               child: Padding(
                 padding: const EdgeInsets.only(left: 8),
-                child: Icon(
+                child: const Icon(
                   Icons.bookmark_rounded,
-                  color: const Color(0xFFFFEE00),
+                  color: Color(0xFFFFEE00),
                   size: 24,
                 ),
               ),

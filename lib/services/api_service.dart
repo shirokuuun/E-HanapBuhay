@@ -4,15 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// API SERVICE
-// Drop this file into:  lib/services/api_service.dart
-//
-// Add to pubspec.yaml dependencies:
-//   http: ^1.2.0
-//   shared_preferences: ^2.2.3
-// ─────────────────────────────────────────────────────────────────────────────
-
 class ApiResponse<T> {
   final bool success;
   final T? data;
@@ -23,14 +14,14 @@ class ApiResponse<T> {
 }
 
 class ApiService {
-  // ── Change this to your local IP when running on a real device ──────────
-  static const String baseUrl = 'http://10.0.2.2:3000/api'; // Android emulator
-  // static const String baseUrl = 'http://localhost:3000/api'; // iOS simulator
-  // static const String baseUrl = 'http://192.168.1.191:3000/api'; // Real device
+  // static const String baseUrl = 'http://192.168.8.157:3000/api'; // Real device:
+  static const String baseUrl = 'http://10.0.2.2:3000/api'; // Emulator:
+  // static const String baseUrl = 'http://localhost:3000/api'; // iOS sim:
+  // Real device: update IP above
 
   static const String _tokenKey = 'auth_token';
 
-  // ── Token management ─────────────────────────────────────────────────────
+  // ── Token management ──────────────────────────────────────────────────────
 
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -47,7 +38,7 @@ class ApiService {
     await prefs.remove(_tokenKey);
   }
 
-  // ── HTTP helpers ─────────────────────────────────────────────────────────
+  // ── HTTP helpers ──────────────────────────────────────────────────────────
 
   static Future<Map<String, String>> _headers({bool auth = false}) async {
     final headers = {'Content-Type': 'application/json'};
@@ -84,7 +75,6 @@ class ApiService {
   // AUTH
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// POST /api/auth/register
   static Future<ApiResponse<Map<String, dynamic>>> register({
     required String fullName,
     required String email,
@@ -113,7 +103,6 @@ class ApiService {
     return result;
   }
 
-  /// POST /api/auth/login
   static Future<ApiResponse<Map<String, dynamic>>> login({
     required String email,
     required String password,
@@ -133,7 +122,6 @@ class ApiService {
     return result;
   }
 
-  /// GET /api/auth/me
   static Future<ApiResponse<Map<String, dynamic>>> getMe() async {
     final response = await http.get(
       Uri.parse('$baseUrl/auth/me'),
@@ -142,14 +130,12 @@ class ApiService {
     return _handle(response, (j) => Map<String, dynamic>.from(j));
   }
 
-  /// Logout — just clears the local token
   static Future<void> logout() async => clearToken();
 
   // ═══════════════════════════════════════════════════════════════════════════
   // JOBS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// GET /api/jobs?work_setup=Remote&search=designer&page=1
   static Future<ApiResponse<Map<String, dynamic>>> getJobs({
     String? workSetup,
     String? search,
@@ -164,7 +150,6 @@ class ApiService {
     return _handle(response, (j) => Map<String, dynamic>.from(j));
   }
 
-  /// GET /api/jobs/:id
   static Future<ApiResponse<Map<String, dynamic>>> getJobById(String id) async {
     final response = await http.get(
       Uri.parse('$baseUrl/jobs/$id'),
@@ -177,7 +162,6 @@ class ApiService {
   // APPLICATIONS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// GET /api/applications?status=Applied
   static Future<ApiResponse<List<Map<String, dynamic>>>> getApplications({
     String? status,
   }) async {
@@ -191,19 +175,15 @@ class ApiService {
     return _handle(response, (j) => List<Map<String, dynamic>>.from(j));
   }
 
-  /// POST /api/applications  — multipart (includes file upload)
   static Future<ApiResponse<Map<String, dynamic>>> submitApplication({
     required String jobId,
-    // Step 1
     required String firstName,
     required String lastName,
     required String phone,
     required String email,
     required String location,
-    // Step 2
     File? resumeFile,
     File? coverLetterFile,
-    // Step 3
     required String jobTitle,
     String? companyName,
     DateTime? workFrom,
@@ -211,7 +191,6 @@ class ApiService {
     bool currentlyWorking = false,
     String? workCity,
     String? workDescription,
-    // Step 4
     required String schoolName,
     String? eduCity,
     String? degree,
@@ -225,7 +204,6 @@ class ApiService {
       'POST',
       Uri.parse('$baseUrl/applications'),
     );
-
     if (token != null) request.headers['Authorization'] = 'Bearer $token';
 
     request.fields.addAll({
@@ -273,7 +251,6 @@ class ApiService {
   // SAVED JOBS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// GET /api/saved-jobs
   static Future<ApiResponse<List<Map<String, dynamic>>>> getSavedJobs() async {
     final response = await http.get(
       Uri.parse('$baseUrl/saved-jobs'),
@@ -282,7 +259,6 @@ class ApiService {
     return _handle(response, (j) => List<Map<String, dynamic>>.from(j));
   }
 
-  /// POST /api/saved-jobs
   static Future<ApiResponse<Map<String, dynamic>>> saveJob(String jobId) async {
     final response = await http.post(
       Uri.parse('$baseUrl/saved-jobs'),
@@ -292,7 +268,6 @@ class ApiService {
     return _handle(response, (j) => Map<String, dynamic>.from(j));
   }
 
-  /// DELETE /api/saved-jobs/:jobId
   static Future<ApiResponse<void>> unsaveJob(String jobId) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/saved-jobs/$jobId'),
@@ -302,49 +277,49 @@ class ApiService {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PROFILE
+  // PROFILE  — all under /api/user/...
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// GET /api/profile
+  /// GET /api/user/profile  (uses JWT token — no ID needed)
   static Future<ApiResponse<Map<String, dynamic>>> getProfile() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/profile'),
+      Uri.parse('$baseUrl/user/profile'), // ← was /profile
       headers: await _headers(auth: true),
     );
     return _handle(response, (j) => Map<String, dynamic>.from(j));
   }
 
-  /// PUT /api/profile
+  /// PUT /api/user/profile  (uses JWT token — no ID needed)
   static Future<ApiResponse<Map<String, dynamic>>> updateProfile({
     String? fullName,
     String? location,
     String? phone,
   }) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/profile'),
+      Uri.parse('$baseUrl/user/profile'), // ← was /profile
       headers: await _headers(auth: true),
       body: jsonEncode({
         if (fullName != null) 'full_name': fullName,
         if (location != null) 'location': location,
-        if (phone != null) 'phone': phone,
+        if (phone != null) 'phone_number': phone,
       }),
     );
     return _handle(response, (j) => Map<String, dynamic>.from(j));
   }
 
+  /// POST /api/user/avatar
   static Future<ApiResponse<Map<String, dynamic>>> uploadAvatar({
     required File imageFile,
   }) async {
     final token = await getToken();
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/profile/avatar'),
+      Uri.parse('$baseUrl/user/avatar'), // ← was /profile/avatar
     );
     if (token != null) request.headers['Authorization'] = 'Bearer $token';
 
     final ext = imageFile.path.split('.').last.toLowerCase();
     final mimeType = ext == 'png' ? 'png' : 'jpeg';
-
     request.files.add(
       await http.MultipartFile.fromPath(
         'avatar',
@@ -357,22 +332,24 @@ class ApiService {
     return _handle(response, (j) => Map<String, dynamic>.from(j));
   }
 
+  /// GET /api/user/documents
   static Future<ApiResponse<Map<String, dynamic>>> getDocuments() async {
-  final response = await http.get(
-    Uri.parse('$baseUrl/profile/documents'),
-    headers: await _headers(auth: true),
-  );
-  return _handle(response, (j) => Map<String, dynamic>.from(j));
+    final response = await http.get(
+      Uri.parse('$baseUrl/user/documents'), // ← was /profile/documents
+      headers: await _headers(auth: true),
+    );
+    return _handle(response, (j) => Map<String, dynamic>.from(j));
   }
 
-    static Future<ApiResponse<Map<String, dynamic>>> uploadDocument({
-    required String type, // 'resume' or 'cover'
+  /// POST /api/user/documents
+  static Future<ApiResponse<Map<String, dynamic>>> uploadDocument({
+    required String type,
     required File file,
   }) async {
     final token = await getToken();
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/profile/documents'),
+      Uri.parse('$baseUrl/user/documents'), // ← was /profile/documents
     );
     if (token != null) request.headers['Authorization'] = 'Bearer $token';
 
@@ -380,7 +357,10 @@ class ApiService {
     final mimeMap = {
       'pdf': MediaType('application', 'pdf'),
       'doc': MediaType('application', 'msword'),
-      'docx': MediaType('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document'),
+      'docx': MediaType(
+        'application',
+        'vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ),
     };
 
     request.fields['document_type'] = type;

@@ -1,13 +1,13 @@
 import 'package:ehanapbuhay/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:ehanapbuhay/pages/job_details_screen.dart';
-import 'package:ehanapbuhay/pages/applied_jobs_screen.dart';
-import 'package:ehanapbuhay/pages/saved_jobs_screen.dart';
-import 'package:ehanapbuhay/pages/profile_screen.dart';
+import 'package:ehanapbuhay/pages/job_details/job_details_screen.dart';
+import 'package:ehanapbuhay/pages/applied_jobs/applied_jobs_screen.dart';
+import 'package:ehanapbuhay/pages/saved_jobs/saved_jobs_screen.dart';
+import 'package:ehanapbuhay/pages/profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -119,11 +119,11 @@ class _JobListPageState extends State<_JobListPage> {
     _fetchJobs();
   }
 
-  Future<void> _fetchJobs() async {
+  Future<void> _fetchJobs({String? filter}) async {
+    final activeFilter = filter ?? _selectedFilter;
     String? workSetup;
-    if (_selectedFilter == 'Remote only') workSetup = 'Remote';
-    if (_selectedFilter == 'Onsite only') workSetup = 'Onsite';
-    // 'All' → workSetup stays null → no filter applied
+    if (activeFilter == 'Remote only') workSetup = 'Remote';
+    if (activeFilter == 'Onsite only') workSetup = 'Onsite';
 
     final result = await ApiService.getJobs(workSetup: workSetup);
     if (result.success && mounted) {
@@ -283,7 +283,7 @@ class _JobListPageState extends State<_JobListPage> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    '${_jobs.length * 10 + 27} New jobs available',
+                    '${_jobs.length} New jobs available',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -299,10 +299,10 @@ class _JobListPageState extends State<_JobListPage> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
-                      onTap: () {
-                        setState(() => _selectedFilter = filter);
-                        _fetchJobs();
-                      },
+                    onTap: () {
+                      setState(() => _selectedFilter = filter);
+                      _fetchJobs(filter: filter); 
+                    },
                       child: Container(
                         padding: const EdgeInsets.symmetric(  
                           horizontal: 16,

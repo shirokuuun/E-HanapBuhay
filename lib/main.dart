@@ -1,9 +1,9 @@
 import 'package:ehanapbuhay/pages/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:ehanapbuhay/onboarding_data/screens/onboarding_screen.dart';
-import 'package:ehanapbuhay/pages/login_screen.dart';
-import 'package:ehanapbuhay/pages/signup_screen.dart';
+import 'package:ehanapbuhay/pages/onboarding/onboarding_screen.dart';
+import 'package:ehanapbuhay/pages/auth/login_screen.dart';
+import 'package:ehanapbuhay/pages/auth/signup_screen.dart';
 
 void main() {
   runApp(const MyApp());
